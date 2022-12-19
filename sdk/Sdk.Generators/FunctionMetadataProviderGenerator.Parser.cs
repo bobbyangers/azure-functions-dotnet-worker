@@ -649,7 +649,7 @@ namespace Microsoft.Azure.Functions.Worker.Sdk.Generators
                     }
                     return true;
                 }
-                
+
                 // trigger input type doesn't match any of the valid cases so return false
                 return false;
             }
