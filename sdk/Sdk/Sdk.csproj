@@ -47,8 +47,8 @@
         <BuildAction>None</BuildAction>
         <Visible>false</Visible>
       </_PackageFiles>
-      <_PackageFiles Include="$(OutputPath)\net472\*.dll">
-        <PackagePath>tools/net472</PackagePath>
+      <_PackageFiles Include="$(OutputPath)\net48\*.dll">
+        <PackagePath>tools/net48</PackagePath>
         <BuildAction>None</BuildAction>
         <Visible>false</Visible>
       </_PackageFiles>
