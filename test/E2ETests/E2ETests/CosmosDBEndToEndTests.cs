@@ -2,22 +2,26 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Azure.Functions.Tests.E2ETests
 {
     [Collection(Constants.FunctionAppCollectionName)]
-    public class CosmosDBEndToEndTests : IDisposable
+    public class CosmosDbEndToEndTests : IClassFixture<CosmosDbFixture>, IAsyncLifetime
     {
-        private readonly IDisposable _disposeLog;
         private readonly FunctionAppFixture _fixture;
+        private readonly CosmosDbFixture _cosmosDbFixture;
+        private readonly IDisposable _disposeLog;
 
-        public CosmosDBEndToEndTests(FunctionAppFixture fixture, ITestOutputHelper testOutput)
+        public CosmosDbEndToEndTests(FunctionAppFixture fixture, CosmosDbFixture cosmosDbFixture , ITestOutputHelper testOutput)
         {
             _fixture = fixture;
-            _disposeLog = _fixture.TestLogs.UseTestLogger(testOutput);
+            _cosmosDbFixture = cosmosDbFixture;
+            _disposeLog = fixture.TestLogs.UseTestLogger(testOutput);
         }
 
         [Fact]
@@ -26,23 +30,40 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
             string expectedDocId = Guid.NewGuid().ToString();
             try
             {
-                //Trigger            
-                await CosmosDBHelpers.CreateDocument(expectedDocId);
+                //Trigger
+                await _cosmosDbFixture.CreateDocument(expectedDocId);
 
                 //Read
-                var documentId = await CosmosDBHelpers.ReadDocument(expectedDocId);
+                var documentId = await _cosmosDbFixture.ReadDocument(expectedDocId);
+                
+                //Assert
                 Assert.Equal(expectedDocId, documentId);
+
+                //NOTE: ensure that trigger was launched....
+                _fixture.TestLogs.CoreToolsLogs.Should().Contain("Function.CosmosTrigger");
+
             }
             finally
             {
                 //Clean up
-                await CosmosDBHelpers.DeleteTestDocuments(expectedDocId);
+                await _cosmosDbFixture.DeleteTestDocuments(expectedDocId);
             }
         }
 
-        public void Dispose()
+        #region Implementation of IAsyncLifetime
+
+        public async Task InitializeAsync()
         {
+            await _cosmosDbFixture.TryCreateDocumentCollectionsAsync(_fixture.TestLogs);
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _cosmosDbFixture.DeleteDocumentCollections();
+
             _disposeLog?.Dispose();
         }
+
+        #endregion
     }
 }

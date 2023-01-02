@@ -24,14 +24,14 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
 
         public FunctionAppFixture(IMessageSink messageSink)
         {
-            // initialize logging            
+            // initialize logging
             ILoggerFactory loggerFactory = new LoggerFactory();
             TestLogs = new TestLoggerProvider(messageSink);
             loggerFactory.AddProvider(TestLogs);
             _logger = loggerFactory.CreateLogger<FunctionAppFixture>();
         }
 
-        public async Task InitializeAsync()
+        public virtual async Task InitializeAsync()
         {
             // start host via CLI if testing locally
             if (Constants.FunctionsHostUrl.Contains("localhost"))
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
                     _funcProcess.StartInfo.ArgumentList.Add("ExceptionFunction");
                 }
 
-                await CosmosDBHelpers.TryCreateDocumentCollectionsAsync(_logger);
+
 
                 FixtureHelpers.StartProcessWithLogging(_funcProcess, _logger);
 
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
         internal TestLoggerProvider TestLogs { get; private set; }
 
 
-        public Task DisposeAsync()
+        public virtual Task DisposeAsync()
         {
             if (!_disposed)
             {

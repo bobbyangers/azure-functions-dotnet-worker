@@ -11,6 +11,8 @@ namespace Microsoft.Azure.Functions.Tests
 {
     public static class TestUtility
     {
+        private const int SECONDS = 1000;
+
         public static IConfiguration GetTestConfiguration()
         {
             return new ConfigurationBuilder()
@@ -25,7 +27,7 @@ namespace Microsoft.Azure.Functions.Tests
             return builder.AddJsonFile(configPath, true);
         }
 
-        public static async Task RetryAsync(Func<Task<bool>> condition, int timeout = 60 * 1000, int pollingInterval = 2 * 1000, bool throwWhenDebugging = false, Func<string> userMessageCallback = null)
+        public static async Task RetryAsync(Func<Task<bool>> condition, int timeout = 20 * SECONDS, int pollingInterval = 2 * SECONDS, bool throwWhenDebugging = false, Func<string> userMessageCallback = null)
         {
             DateTime start = DateTime.Now;
             while (!await condition())
@@ -38,7 +40,7 @@ namespace Microsoft.Azure.Functions.Tests
                     string error = "Condition not reached within timeout.";
                     if (userMessageCallback != null)
                     {
-                        error += " " + userMessageCallback();
+                        error += " | " + userMessageCallback();
                     }
                     throw new ApplicationException(error);
                 }

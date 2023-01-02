@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
     [Collection(Constants.FunctionAppCollectionName)]
     public class TimerEndToEndTests : IDisposable
     {
+        private const int SECONDS = 1000;
+
         private readonly IDisposable _disposeLog;
         private readonly FunctionAppFixture _fixture;
 
@@ -27,6 +29,7 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
         public async Task TimerTriggerWithTimerInfo_Succeeds()
         {
             string key = "TimerInfo: ";
+            var timeout = 30 * SECONDS;
 
             IEnumerable<string> logs = null;
             await TestUtility.RetryAsync(() =>
@@ -34,7 +37,7 @@ namespace Microsoft.Azure.Functions.Tests.E2ETests
                 logs = _fixture.TestLogs.CoreToolsLogs.Where(p => p.Contains(key));
                 // The "RunOnStartup" log should show, and then a true invocation.
                 return Task.FromResult(logs.Count() >= 2);
-            });
+            }, timeout);
 
             // Check the serialized TimerInfo; they should all be valid values.
             var lastLog = logs.Last();
